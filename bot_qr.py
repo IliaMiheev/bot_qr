@@ -1,17 +1,20 @@
 from dotenv import load_dotenv
+from sys import exit as sexit
 from os import remove, getenv
+
 import telebot
 import qrcode
-
 
 # Загрузить переменные из файла .env
 load_dotenv()
 # Получить значение переменной
 API_TOKEN = getenv("API_TOKEN")
+if API_TOKEN is None:
+    print('Отсутствует токен телеграм бота. Загрузи токен в переменные окружения и бот сможет начать работу')
+    sexit(1)  # Завершаем программу с кодом ошибки 1
 
 
 bot = telebot.TeleBot(API_TOKEN)
-
 
 @bot.message_handler(commands=['start'])
 def start(mess):
