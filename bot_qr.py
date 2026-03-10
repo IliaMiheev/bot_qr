@@ -15,13 +15,17 @@ if API_TOKEN is None:
 
 
 bot = telebot.TeleBot(API_TOKEN)
+photoName = None
 
 @bot.message_handler(commands=['start'])
 def start(mess):
-    bot.send_message(mess.chat.id, 'Привет. Я генерирую QR коды. Отправь мне текст и я его преобразую')
+    bot.send_message(mess.chat.id, '''Привет. Я генерирую QR коды. Отправь мне текст и я его преобразую.
+Код проекта можно посмотреть в <a href="https://github.com/IliaMiheev/bot_qr">репозитории</a> на GitHub''', parse_mode='html')
 
 
-def gen_qr(text):
+def gen_qr(text, id):
+    global photoName
+    photoName = f"qrcode_{id}.png"
     # Создаем экземпляр класса QRCode
     qr = qrcode.QRCode(
         version=1,
@@ -35,17 +39,17 @@ def gen_qr(text):
     # Создаем изображение QR-кода
     img = qr.make_image(fill_color="black", back_color="white")
     # Сохраняем изображение QR-кода
-    img.save("qrcode.png")
+    img.save(photoName)
 
 
 @bot.message_handler(content_types=['text'])
 def generate_qr_code(mess):
-    gen_qr(mess.text)
+    gen_qr(mess.text, mess.from_user.id)
     text = f'<b>Сообщение:</b> {mess.text}\n<b>Слов в сообщении:</b> {len(mess.text.split())}\n<b>Символов в сообщении:</b> {len(mess.text)}'
-    with open('qrcode.png', 'rb') as qr_photo:
+    with open(photoName, 'rb') as qr_photo:
         bot.send_photo(mess.chat.id, qr_photo)
         bot.send_message(mess.chat.id, text, parse_mode='html')
-    remove('qrcode.png')
+    remove(photoName)
 
 print('Бот запущен')
 bot.polling()
